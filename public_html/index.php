@@ -61,6 +61,16 @@ LIMIT $limit OFFSET $offset
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $movies = $stmt->fetchAll();
+
+/* =========================
+   USER RATINGS FOR DISPLAY
+========================= */
+$user_ratings = [];
+if (isset($_SESSION['user_id'])) {
+    $stmt = $pdo->prepare("SELECT movie_id FROM ratings WHERE user_id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user_ratings = $stmt->fetchAll(PDO::FETCH_COLUMN);
+}
 ?>
 
 <!DOCTYPE html>
@@ -76,20 +86,16 @@ $movies = $stmt->fetchAll();
 body {
     background: #f5f6fa;
 }
-
 /* ===== Карточки ===== */
 .card {
     border-radius: 16px;
     overflow: hidden;
 }
-
 .movie-poster {
     width: 100%;
     height: 300px;
     object-fit: cover;
 }
-
-/* ===== Описание ===== */
 .card-text {
     overflow: hidden;
     display: -webkit-box;
@@ -105,46 +111,16 @@ body {
     color: gray;
     cursor: pointer;
 }
-
 /* ===== Адаптация ===== */
 @media (max-width: 768px) {
-
-    h1 {
-        font-size: 1.5rem;
-        text-align: center;
-    }
-
-    .header-flex {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .header-buttons a {
-        width: 100%;
-        margin-bottom: 8px;
-    }
-
-    .search-form {
-        background: white;
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    }
-
-    .movie-poster {
-        height: 240px;
-    }
-
-    .pagination {
-        flex-wrap: wrap;
-    }
+    h1 { font-size: 1.5rem; text-align:center; }
+    .header-flex { flex-direction: column; gap: 15px; }
+    .header-buttons a { width: 100%; margin-bottom: 8px; }
+    .search-form { background:white; padding:15px; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.05);}
+    .movie-poster { height: 240px; }
+    .pagination { flex-wrap: wrap; }
 }
-
-@media (max-width: 480px) {
-    .movie-poster {
-        height: 210px;
-    }
-}
+@media (max-width: 480px) { .movie-poster { height: 210px; } }
 </style>
 </head>
 
@@ -215,8 +191,14 @@ body {
                 </p>
 
                 <?php if (isset($_SESSION['user_id'])): ?>
+                    
+                    <?php if (in_array($movie['id'], $user_ratings)): ?>
+                        <div class="alert alert-secondary text-center mb-2 p-1">
+                            Вы уже оценили этот фильм
+                        </div>
+                    <?php endif; ?>
 
-                    <form action="rate_movie.php" method="POST" class="mb-2">
+                    <form action="rate_movie.php" method="POST" class="mb-2 add-watchlist">
                         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
                         <input type="hidden" name="movie_id" value="<?= $movie['id'] ?>">
                         <div class="d-flex">

@@ -28,10 +28,25 @@ JOIN movies ON ratings.movie_id = movies.id
 WHERE ratings.user_id = ?
 ORDER BY ratings.created_at DESC
 ";
-
 $stmt = $pdo->prepare($sql);
 $stmt->execute([$user_id]);
 $my_ratings = $stmt->fetchAll();
+
+/* ---------- ОБРАБОТКА СООБЩЕНИЙ ОШИБОК И УСПЕХА ---------- */
+$errorMsg = '';
+$successMsg = '';
+if (isset($_GET['password'])) {
+    if ($_GET['password'] === 'success') {
+        $successMsg = 'Пароль успешно изменён';
+    } elseif ($_GET['password'] === 'error') {
+        switch ($_GET['msg'] ?? '') {
+            case 'password_mismatch': $errorMsg = 'Пароли не совпадают'; break;
+            case 'password_rules': $errorMsg = 'Пароль должен содержать минимум 8 символов, 1 заглавную букву, 1 цифру и 1 спецсимвол'; break;
+            case 'wrong_old': $errorMsg = 'Неверный текущий пароль'; break;
+            case 'csrf': $errorMsg = 'Ошибка безопасности. Попробуйте снова'; break;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -54,13 +69,17 @@ $my_ratings = $stmt->fetchAll();
     cursor: pointer;
     color: #6c757d;
 }
+
+/* ===== Отступ сверху для фиксированной navbar ===== */
+body { padding-top: 70px; }
+.navbar { z-index: 1030; }
 </style>
 </head>
 
 <body class="bg-light">
 
 <!-- НАВИГАЦИЯ -->
-<nav class="navbar navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-dark bg-dark fixed-top">
     <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand" href="index.php">🎬 Каталог кинофильмов</a>
         <div>
@@ -70,38 +89,28 @@ $my_ratings = $stmt->fetchAll();
 </nav>
 
 <div class="container">
-
     <h2 class="mb-4">👤 Личный кабинет</h2>
 
-    <!-- ===== КНОПКИ НАВИГАЦИИ ===== -->
+    <!-- Кнопки -->
     <div class="mb-4 d-flex gap-2 flex-wrap">
         <a href="index.php" class="btn btn-primary">📽 Каталог фильмов</a>
         <a href="watchlist.php" class="btn btn-warning">📝 Мой список к просмотру</a>
     </div>
 
-    <!-- ===== МОИ ОЦЕНКИ ===== -->
+    <!-- МОИ ОЦЕНКИ -->
     <div class="card mb-4 card-shadow">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Мои оценки фильмов</h5>
-        </div>
+        <div class="card-header bg-white"><h5 class="mb-0">Мои оценки фильмов</h5></div>
         <div class="card-body">
-            <?php if (count($my_ratings) > 0): ?>
+            <?php if(count($my_ratings) > 0): ?>
             <div class="table-responsive">
                 <table class="table align-middle">
                     <thead>
-                        <tr>
-                            <th>Фильм</th>
-                            <th>Оценка</th>
-                            <th>Дата</th>
-                        </tr>
+                        <tr><th>Фильм</th><th>Оценка</th><th>Дата</th></tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($my_ratings as $rate): ?>
+                        <?php foreach($my_ratings as $rate): ?>
                         <tr>
-                            <td>
-                                <img src="<?= htmlspecialchars($rate['poster_url']) ?>"
-                                     style="height:50px;object-fit:cover"
-                                     class="me-2 rounded">
+                            <td><img src="<?= htmlspecialchars($rate['poster_url']) ?>" style="height:50px;object-fit:cover" class="me-2 rounded">
                                 <?= htmlspecialchars($rate['title']) ?>
                             </td>
                             <td>⭐ <?= $rate['rating'] ?> / 5</td>
@@ -112,44 +121,45 @@ $my_ratings = $stmt->fetchAll();
                 </table>
             </div>
             <?php else: ?>
-            <p class="text-muted mb-0">Вы ещё не оценили ни одного фильма.</p>
+                <p class="text-muted mb-0">Вы ещё не оценили ни одного фильма.</p>
             <?php endif; ?>
         </div>
     </div>
 
-    <!-- ===== СМЕНА ПАРОЛЯ ===== -->
+    <!-- СМЕНА ПАРОЛЯ -->
     <div class="card card-shadow mb-4">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">🔐 Сменить пароль</h5>
-        </div>
+        <div class="card-header bg-white"><h5 class="mb-0">🔐 Сменить пароль</h5></div>
         <div class="card-body">
 
-            <?php if (isset($_GET['password']) && $_GET['password'] === 'success'): ?>
-            <div class="alert alert-success">Пароль успешно изменён</div>
+            <?php if($successMsg): ?>
+                <div class="alert alert-success"><?= $successMsg ?></div>
+            <?php endif; ?>
+            <?php if($errorMsg): ?>
+                <div class="alert alert-danger"><?= $errorMsg ?></div>
             <?php endif; ?>
 
-            <form id="changePasswordForm" action="change_password.php" method="post">
+            <form action="change_password.php" method="post">
                 <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
                 <div class="mb-3 password-container">
-                    <label class="form-label">Текущий пароль</label>
+                    <label>Текущий пароль</label>
                     <input type="password" name="old_password" class="form-control" required>
                     <span class="toggle-password" onclick="togglePassword(this)">👁</span>
                 </div>
 
                 <div class="mb-3 password-container">
-                    <label class="form-label">Новый пароль</label>
+                    <label>Новый пароль</label>
                     <input type="password" name="new_password" class="form-control" required>
                     <span class="toggle-password" onclick="togglePassword(this)">👁</span>
                 </div>
 
                 <div class="mb-3 password-container">
-                    <label class="form-label">Повтор нового пароля</label>
+                    <label>Повтор нового пароля</label>
                     <input type="password" name="new_password_confirm" class="form-control" required>
                     <span class="toggle-password" onclick="togglePassword(this)">👁</span>
                 </div>
 
-                <button type="submit" class="btn btn-warning w-100">Сменить пароль</button>
+                <button class="btn btn-warning w-100">Сменить пароль</button>
             </form>
 
         </div>
@@ -158,14 +168,9 @@ $my_ratings = $stmt->fetchAll();
 </div>
 
 <script>
-// Показать/скрыть пароль
-function togglePassword(el) {
+function togglePassword(el){
     const input = el.previousElementSibling;
-    if (input.type === "password") {
-        input.type = "text";
-    } else {
-        input.type = "password";
-    }
+    input.type = input.type === 'password' ? 'text' : 'password';
 }
 </script>
 

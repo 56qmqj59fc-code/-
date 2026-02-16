@@ -19,6 +19,19 @@ $movies = $stmt->fetchAll();
 <meta charset="UTF-8">
 <title>Админ-панель</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+/* Отступы между кнопками действий */
+.action-buttons a,
+.action-buttons form {
+    display: inline-block;
+    margin-right: 5px; /* расстояние между кнопками */
+    margin-bottom: 3px; /* небольшой нижний отступ */
+}
+
+.action-buttons form button {
+    margin-right: 0; /* у кнопки внутри формы свой margin не нужен */
+}
+</style>
 </head>
 <body class="p-4">
 
@@ -28,7 +41,7 @@ $movies = $stmt->fetchAll();
         <h1>⚙️ Админ-панель</h1>
         <div>
             <a href="add_item.php" class="btn btn-success me-2">➕ Добавить фильм</a>
-            <a href="index.php" class="btn btn-secondary">← В каталог</a>
+            <a href="logout.php" class="btn btn-secondary">Выйти</a>
         </div>
     </div>
 
@@ -63,7 +76,7 @@ $movies = $stmt->fetchAll();
                     <td><?= $movie['release_year'] ?></td>
                     <td><?= htmlspecialchars($movie['duration']) ?></td>
 
-                    <td>
+                    <td class="action-buttons">
 
                         <!-- Кнопка редактирования -->
                         <a href="edit_movie.php?id=<?= $movie['id'] ?>"
@@ -74,14 +87,12 @@ $movies = $stmt->fetchAll();
                         <!-- Кнопка удаления (POST!) -->
                         <form action="delete_movie.php"
                               method="POST"
-                              style="display:inline;"
                               onsubmit="return confirm('Вы уверены, что хотите удалить фильм?');">
 
                             <input type="hidden" name="id" value="<?= $movie['id'] ?>">
                             <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
-                            <button type="submit"
-                                    class="btn btn-danger btn-sm">
+                            <button type="submit" class="btn btn-danger btn-sm">
                                 🗑️ Удалить
                             </button>
                         </form>

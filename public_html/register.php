@@ -1,8 +1,8 @@
 <?php
+session_start();
 require '../db.php'; 
 
 $errorMsg = '';
-$successMsg = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($pass !== $passConfirm) {
         $errorMsg = "Пароли не совпадают!";
     } else {
+
         $hash = password_hash($pass, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO users (email, password_hash, role) 
@@ -28,12 +29,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ':email' => $email,
                 ':hash' => $hash
             ]);
-            $successMsg = "Регистрация успешна! <a href='login.php'>Войти</a>";
+
+            // 🔐 Автоматическая авторизация после регистрации
+            $_SESSION['user_id'] = $pdo->lastInsertId();
+            $_SESSION['role'] = 'client';
+
+            // 🔄 Перенаправление на главную страницу
+            header("Location: index.php");
+            exit;
+
         } catch (PDOException $e) {
             if ($e->getCode() == 23000) {
                 $errorMsg = "Такой email уже зарегистрирован.";
             } else {
-                $errorMsg = "Ошибка БД: " . $e->getMessage();
+                $errorMsg = "Ошибка БД.";
             }
         }
     }
@@ -44,38 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    
-    <!-- ВАЖНО ДЛЯ МОБИЛЬНЫХ -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Регистрация</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-
-/* ===== Мобильная адаптация ===== */
 @media (max-width: 768px) {
-
-    body {
-        padding: 15px;
-    }
-
-    .card {
-        border-radius: 15px;
-    }
-
-    .card-header h4 {
-        font-size: 1.2rem;
-        text-align: center;
-    }
-
-    .container {
-        margin-top: 20px !important;
-    }
-
+    body { padding: 15px; }
+    .card { border-radius: 15px; }
+    .card-header h4 { font-size: 1.2rem; text-align: center; }
+    .container { margin-top: 20px !important; }
 }
-
 </style>
 </head>
 
@@ -84,7 +72,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container">
     <div class="row justify-content-center">
         
-        <!-- col-12 для телефона, col-md-6 для ПК -->
         <div class="col-12 col-md-6 col-lg-5">
             
             <div class="card shadow">
@@ -100,12 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <?= htmlspecialchars($errorMsg) ?>
                         </div>
                     <?php endif; ?>
-                    
-                    <?php if($successMsg): ?>
-                        <div class="alert alert-success text-center">
-                            <?= $successMsg ?>
-                        </div>
-                    <?php else: ?>
 
                     <form method="POST" action="register.php">
 
@@ -145,8 +126,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             Уже есть аккаунт? Войти
                         </a>
                     </div>
-
-                    <?php endif; ?>
 
                 </div>
             </div>

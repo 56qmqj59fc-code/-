@@ -1,0 +1,252 @@
+/* =========================
+   BASE
+========================= */
+
+body {
+    background-color: #f8f9fa;
+}
+
+/* =========================
+   ADMIN FORM
+========================= */
+
+.form-card {
+    border-radius: 15px;
+    border: none;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* =========================
+   MOVIE CARD (MAIN + WATCHLIST)
+========================= */
+
+.movie-card {
+    border-radius: 15px;
+    overflow: hidden;
+    border: none;
+}
+
+.movie-card img {
+    height: 400px;
+    object-fit: cover;
+}
+
+/* маленькие картинки (watchlist) */
+.movie-card img.small {
+    height: 250px;
+}
+
+/* =========================
+   PROFILE
+========================= */
+
+.profile-card {
+    border-radius: 15px;
+    border: none;
+}
+
+.table-ratings {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.star-active {
+    color: #ffc107;
+}
+
+/* =========================
+   WATCHLIST
+========================= */
+
+.watched-card {
+    opacity: 0.7;
+    filter: grayscale(50%);
+}
+
+/* =========================
+   DESCRIPTION TEXT
+========================= */
+
+.description-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.description-text.expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+}
+
+/* =========================
+   TOGGLE BUTTON
+========================= */
+
+.toggle-btn {
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+.toggle-btn:hover {
+    color: #495057;
+}
+
+/* =========================
+   ADMIN LINK
+========================= */
+
+.nav-link-admin {
+    color: #ffc107 !important;
+    font-weight: bold;
+    border: 1px solid #ffc107;
+    border-radius: 5px;
+}
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+
+/* планшеты */
+@media (max-width: 992px) {
+    .movie-card img {
+        height: 300px;
+    }
+
+    .container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+/* планшеты + телефоны */
+@media (max-width: 768px) {
+    .movie-card img {
+        height: 250px;
+    }
+
+    .card-body {
+        padding: 12px;
+    }
+
+    .form-control {
+        font-size: 14px;
+    }
+
+    .btn {
+        font-size: 14px;
+    }
+
+    .description-text {
+        -webkit-line-clamp: 4;
+    }
+
+    .navbar-nav {
+        text-align: center;
+        gap: 10px;
+    }
+}
+
+/* телефоны */
+@media (max-width: 576px) {
+
+    .movie-card img {
+        height: 200px;
+    }
+
+    .navbar-brand {
+        font-size: 16px;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+
+    .toggle-btn {
+        font-size: 12px;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        font-size: 13px;
+    }
+
+    .form-control {
+        font-size: 13px;
+    }
+}
+
+/* =========================
+   ADMIN PANEL RESPONSIVE
+========================= */
+
+.admin-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-poster {
+    height: 50px;
+    border-radius: 4px;
+}
+
+/* TABLE RESPONSIVE FIX */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .admin-title {
+        font-size: 18px;
+    }
+
+    .admin-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .admin-actions a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .admin-actions-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .btn {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 576px) {
+
+    .admin-poster {
+        height: 40px;
+    }
+
+    .table td,
+    .table th {
+        font-size: 12px;
+    }
+}
